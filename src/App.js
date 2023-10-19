@@ -1,86 +1,83 @@
-import { Component } from "react";
+import { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import { ContactList } from "ContactsList/ContactsList";
 import { ContactForm } from "ContactForm/ContactForm";
 import { Filter } from "Filter/Filter";
 
-class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: ''
-  }
+const App = () => {
+  const [contacts, setContacts] = useState([
+    { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+    { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+    { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+    { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+  ]);
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const sevedContacts = localStorage.getItem(`contacts-list`);
-    if (sevedContacts !== null) {
-      this.setState({ contacts: JSON.parse(sevedContacts) });
+  useEffect(() => {
+    const savedContacts = localStorage.getItem('contacts-list');
+    if (savedContacts !== null) {
+      setContacts(JSON.parse(savedContacts));
     }
-  }
+  }, []);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem(`contacts-list`, JSON.stringify(this.state.contacts));
-    }
-  }
+  useEffect(() => {
+    localStorage.setItem(`contacts-list`, JSON.stringify(contacts));
+  }, [contacts])
 
-  addContact = newContact => {
+  const addContact = newContact => {
     const { name, number } = newContact;
 
-    if (this.checkIfContactExists(name, number)) {
+    if (checkIfContactExists(name, number)) {
       alert(`Contact with name ${name} or number ${number} already exists!`);
       return;
     }
 
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, { ...newContact, id: nanoid() }]
-    }));
+    setContacts((prevContacts) => [
+      ...prevContacts, { ...newContact, id: nanoid() },
+    ]);
   }
 
-  checkIfContactExists = (name, number) => {
-    const existingContact = this.state.contacts.find(
+  const checkIfContactExists = (name, number) => {
+    const existingContact = contacts.find(
       contact => contact.name.toLowerCase() === name.toLowerCase() ||
         contact.number === number
     );
     return existingContact;
   }
 
-  changeFilter = newFilter => {
-    this.setState({ filter: newFilter })
+  const changeFilter = (newFilter) => {
+    setFilter(newFilter);
   }
 
-  deleteContactElement = (elementId) => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => elementId !== contact.id)
-    }))
+  const deleteContactElement = (elementId) => {
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => elementId !== contact.id)
+    )
   }
 
-  getVisibleContacts = () => {
-    const { filter, contacts } = this.state;
+  const getVisibleContacts = () => {
     return contacts.filter(contact =>
       contact.name.toLowerCase().includes(filter.toLowerCase())
     );
   }
 
-  render() {
-    const { filter } = this.state;
-    const visibleContacts = this.getVisibleContacts();
+  const visibleContacts = getVisibleContacts();
 
-    return (
-      <div>
-        <h1>Phonebook</h1>
-        <ContactForm toAdd={this.addContact} />
-        <h2>Contacts</h2>
-        <Filter filterName={filter} toSearch={this.changeFilter} />
-        <ContactList persons={visibleContacts} toDelete={this.deleteContactElement} />
-      </div>
-    )
-  }
+  return (
+    <div>
+      <h1>Phonebook</h1>
+      <ContactForm toAdd={addContact} />
+      <h2>Contacts</h2>
+      <Filter filterName={filter} toSearch={changeFilter} />
+      <ContactList persons={visibleContacts} toDelete={deleteContactElement} />
+    </div>
+  )
 }
 
 export default App;
+
+
+
+
+
 
