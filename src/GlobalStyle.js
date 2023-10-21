@@ -9,3 +9,4 @@ export const GlobalStyle = createGlobalStyle`
         margin-left: 40px
     }
 `
+
